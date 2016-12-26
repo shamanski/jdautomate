@@ -1,0 +1,13 @@
+c:\users\tanya\documents\visual studio 2015\Projects\jdautomate\jdautomate\bin\Debug\jdautomate.exe.config
+c:\users\tanya\documents\visual studio 2015\Projects\jdautomate\jdautomate\obj\Debug\jdautomate.csprojResolveAssemblyReference.cache
+c:\users\tanya\documents\visual studio 2015\Projects\jdautomate\jdautomate\obj\Debug\jdautomate.Form1.resources
+c:\users\tanya\documents\visual studio 2015\Projects\jdautomate\jdautomate\obj\Debug\jdautomate.Properties.Resources.resources
+c:\users\tanya\documents\visual studio 2015\Projects\jdautomate\jdautomate\obj\Debug\jdautomate.csproj.GenerateResource.Cache
+c:\users\tanya\documents\visual studio 2015\Projects\jdautomate\jdautomate\bin\Debug\jdautomate.exe
+c:\users\tanya\documents\visual studio 2015\Projects\jdautomate\jdautomate\bin\Debug\jdautomate.pdb
+c:\users\tanya\documents\visual studio 2015\Projects\jdautomate\jdautomate\bin\Debug\WebDriver.dll
+c:\users\tanya\documents\visual studio 2015\Projects\jdautomate\jdautomate\bin\Debug\WebDriver.xml
+c:\users\tanya\documents\visual studio 2015\Projects\jdautomate\jdautomate\obj\Debug\jdautomate.exe
+c:\users\tanya\documents\visual studio 2015\Projects\jdautomate\jdautomate\obj\Debug\jdautomate.pdb
+c:\users\tanya\documents\visual studio 2015\Projects\jdautomate\jdautomate\bin\Debug\WebDriver.Support.dll
+c:\users\tanya\documents\visual studio 2015\Projects\jdautomate\jdautomate\bin\Debug\WebDriver.Support.xml
