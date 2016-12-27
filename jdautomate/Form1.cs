@@ -29,7 +29,8 @@ namespace jdautomate
         {
             InitializeComponent();
             work = new BackgroundWorker();
-            work.WorkerReportsProgress = true;          
+            work.WorkerReportsProgress = true;
+            work.WorkerSupportsCancellation = true;
             work.ProgressChanged += workProgress;  
             work.RunWorkerCompleted += delegate { workProgress(null, null); };
             Automate.onLog += this.LogConsole;
@@ -57,6 +58,8 @@ namespace jdautomate
             if ((!newLine) &&(consoleBox.Items.Count>0) ) consoleBox.Items.RemoveAt(consoleBox.Items.Count - 1);
             consoleBox.Items.Add(s);
             consoleBox.SelectedIndex = consoleBox.Items.Count - 1;
+            string timeStamp = DateTime.Now.ToString("dd.MM HH:mm:ss ");
+            File.AppendAllText("log.txt", timeStamp + s + Environment.NewLine);
         }
 
         private void randomCheck_CheckedChanged(object sender, EventArgs e)
@@ -128,26 +131,6 @@ namespace jdautomate
             work.RunWorkerAsync();
             work.ReportProgress(1);
             
-        }
-
-        private void button2_Click(object sender, EventArgs e)
-        {
-            int num = 0;
-            ThreadPool.SetMaxThreads(1, 1);
-            List<String> tabs = new List<String>();
-            IWebDriver driver = new ChromeDriver(@"C:\1");
-            tabs.Add(driver.CurrentWindowHandle);
-            IJavaScriptExecutor js = driver as IJavaScriptExecutor;
-            // ReadOnlyCollection<string> handles = driver.WindowHandles;
-            foreach (var i in Logins.instance.loginsList)
-            {
-                //var data = new Automate.Data();
-                Automate.Game(driver, Logins.instance.loginsList[num++]);
-                // js.ExecuteScript("var win = window.open('', '_blank');win.focus();");
-                // tabs.Add(driver.CurrentWindowHandle);
-                // driver.SwitchTo().Window(driver.WindowHandles.Last());
-                //ThreadPool.QueueUserWorkItem(new WaitCallback(Automate.DoRegister), data);
-            }
         }
 
         private void button3_Click(object sender, EventArgs e)
@@ -224,6 +207,14 @@ namespace jdautomate
         {
             Automate.newGmailAccount("sdfjdfksjdhfkdjhfds", "ccfvnhjy1");
         }
+
+        private void cancelButton_Click(object sender, EventArgs e)
+        {
+            string timeStamp = DateTime.Now.ToString("dd.MM HH:mm:ss ");
+            string text = "Operation cancelled." + Environment.NewLine + timeStamp + statusText.Text + Environment.NewLine;
+            File.AppendAllText("log.txt", text);
+            work.CancelAsync();
+        }
     }
     public static class Automate
     {
@@ -250,6 +241,7 @@ namespace jdautomate
             }
         }
 
+        //screenshot
         public static Image TakeScreenshot(IWebDriver parDriver)
             {
                 string saveLocation = "screen.png";
@@ -263,6 +255,7 @@ namespace jdautomate
                 return myScreenhot;
             }
 
+        //save captcha to random .png
         public static void TakeCaptcha(IWebDriver parDriver, int parXPosCaptcha, int parYPosCaptcha, Size size)
             {
                 Random r = new Random();
@@ -282,6 +275,7 @@ namespace jdautomate
                 //return bmpCaptcha;
             }
 
+        //register list of accounts
         public static void RegisterAll(int startPosition)
             {
                 var logins = Logins.instance;
@@ -315,13 +309,13 @@ namespace jdautomate
                 }
             }
 
+        //gmail session
         private static void oSession_Connected()
         { }
         private static void oSession_ErrorPOP3(int number, string description)
         {
 
         }
-
         private static  void oSession_StatusChanged(string Status, Session.StatusTypeConstants StatusType)
         {
  
@@ -329,6 +323,7 @@ namespace jdautomate
      
         }
 
+        //look for confirmation links in gmail account
         public static void GmailRead(string email, string password, string url, string fileName)
             {
                 onLog("Start connecting " + email, true);
@@ -370,85 +365,111 @@ namespace jdautomate
 
         }
 
+        //upgrade one time
         public static string Upgrade(IWebDriver driver)
         {
-            onLog("Prepare click... ", true);
-            driver.Navigate().GoToUrl("https://www.slivki.by/kamni-ohlazhdenie-napitok-minsk-skidka");
-            IWebElement button = driver.FindElement(By.Id("buyCodeButton"));
-            button.Click();
-            IWebElement button2 = driver.FindElement(By.ClassName("buttonYes"));
-            button2.Click();
-           
-            IWebElement code = driver.FindElement(By.ClassName("codeValue"));
-            File.AppendAllText("result.txt", code.Text + Environment.NewLine);
-            driver.Navigate().GoToUrl("https://www.slivki.by/kamni-ohlazhdenie-napitok-minsk-skidka");
-            button = driver.FindElement(By.Id("buyCodeButton"));
-            button.Click();
-            button2 = driver.FindElement(By.ClassName("buttonYes"));
-            button2.Click();
-            IWebElement code2 = driver.FindElement(By.ClassName("codeValue"));
-            onLog("Click OK.", true);
-            return code2.Text; 
+            try
+            {
+                driver.Navigate().GoToUrl("https://www.slivki.by/kamni-ohlazhdenie-napitok-minsk-skidka");
+                IWebElement button = driver.FindElement(By.Id("buyCodeButton"));
+                button.Click();
+                IWebElement button2 = driver.FindElement(By.ClassName("buttonYes"));
+                button2.Click();
+                IWebElement code = driver.FindElement(By.ClassName("codeValue"));
+                return code.Text;                
+            }
+            catch
+            {
+                return "";
+            }
+ 
         }
 
+        //login and upgrade all entries in limit
         public static void UpgradeAll(IWebDriver driver, List<Logins.LoginEntry> loginEntry, int maxUpgrades, int maxLaps)
         {
-            var nextLapEntries = new List<Logins.LoginEntry>();
+            var nextLapEntries = new List<Logins.LoginEntry>(); //list for negative entries
             int currentLap = 1;
             int positive = 0;
+            int numAttempts = 2; //number of attempts with same login
+            string logMsg;
             do
             {
                 if (currentLap > 1)
                 {
-                    loginEntry = nextLapEntries;
+                    loginEntry = nextLapEntries;//working with negatives
                     nextLapEntries.Clear();
                 }
                 Logins.LoginEntry currentLoginEntry;                    
-                for (int curr = 0; curr < loginEntry.Count && positive < maxUpgrades; curr++)
+                for (int curr = 0; curr < loginEntry.Count && positive < maxUpgrades; curr++) //next login entry
                 {
-                    currentLoginEntry = loginEntry[curr];
+                    currentLoginEntry = loginEntry[curr];                    
+                    //log to status
                     e.Message = String.Format("Update email {4}: {0}. Lap: {3}. Positive: {1}, Negative: {2}",
                                             currentLoginEntry.email, positive, nextLapEntries.Count, currentLap, curr + 1);
                     e.Percent = 100 / maxUpgrades * positive;
-                    onStatus(null, e);
-                    try
+                    onStatus(null, e);//set current status
+                    if (Automate.Login(driver, currentLoginEntry)==true) //login succesfull
                     {
-                        Automate.Login(driver, currentLoginEntry);
-                        string res = Automate.Upgrade(driver);
-                        File.AppendAllText("result.txt", res + Environment.NewLine + currentLoginEntry.email + " " + "finish" + Environment.NewLine);
-                        positive++;
+                        int attempt = 1;
+                        logMsg = String.Format("Lap {2}, Entry {0}, Login {1} success", (curr + 1).ToString(), currentLoginEntry.email, currentLap);
+                        onLog(logMsg, true);
+                        for (attempt = 1; attempt <= numAttempts; attempt++)
+                        {
+                            string res = Automate.Upgrade(driver);//upgrade current entry attempt                            
+                            if (res=="")
+                            {
+                                logMsg = "nothing";
+                                nextLapEntries.Add(currentLoginEntry);
+                            }
+                            else
+                            {
+                                positive++;//success
+                                logMsg = "code " + res;
+                            }
+                            logMsg = String.Format("Lap {3}, Entry {0}, Attempt {1}: Get {2}", (curr + 1).ToString(), attempt.ToString(), logMsg, currentLap);                                
+                            onLog(logMsg, true);                            
+                        }
                     }
-                    catch
+                    else
                     {
-                        File.AppendAllText("result.txt", "problem with " + currentLoginEntry.email + Environment.NewLine);
-                        nextLapEntries.Add(currentLoginEntry);
-                    }
+                        logMsg = String.Format("Lap {2}, Entry {0}, Login {1} failed", (curr + 1).ToString(), currentLoginEntry.email, currentLap);
+                        onLog(logMsg, true);//login failed 
+                    }                                                    
                 }
-                currentLap++;
+                currentLap++;//go to next lap
             }
             while (nextLapEntries.Count>0 && currentLap<maxLaps && nextLapEntries.Count< maxUpgrades);
             
         }
 
-        public static void Login(IWebDriver driver, Logins.LoginEntry entry)
+        //login one entry
+        public static bool Login(IWebDriver driver, Logins.LoginEntry entry)
             {
-            onLog("Starting login " + entry.email, true);
-            driver.Manage().Cookies.DeleteAllCookies();
-            driver.Manage().Timeouts().ImplicitlyWait(TimeSpan.FromSeconds(5));
-            driver.Navigate().GoToUrl("http://slivki.by");
-            IWebElement enter = driver.FindElement(By.ClassName("enter"));
-            enter.Click();
-            IWebElement email = driver.FindElement(By.XPath(@"//div[@class='login']/form/div[@class='form-fields']/div[@class='field']/input[@name='email']"));
-            IWebElement pwd = driver.FindElement(By.XPath(@"//div[@class='login']/form/div[@class='form-fields']/div[@class='field']/input[@name='password']"));
-            IWebElement regist = driver.FindElement(By.XPath(@"//div[@class='login']/form/div[@class='form-fields']/input[@type='submit']"));
-                                                                
-            email.SendKeys(entry.email);
-            pwd.SendKeys(entry.password);
-            regist.Click();
-            IWebElement into = driver.FindElement(By.ClassName("profile-data"));
-            onLog("OK" + entry.email, true);
+            try
+            {
+                onLog("Starting login " + entry.email, true);
+                driver.Manage().Cookies.DeleteAllCookies();
+                driver.Manage().Timeouts().ImplicitlyWait(TimeSpan.FromSeconds(5));
+                driver.Navigate().GoToUrl("http://slivki.by");
+                IWebElement enter = driver.FindElement(By.ClassName("enter"));
+                enter.Click();
+                IWebElement email = driver.FindElement(By.XPath(@"//div[@class='login']/form/div[@class='form-fields']/div[@class='field']/input[@name='email']"));
+                IWebElement pwd = driver.FindElement(By.XPath(@"//div[@class='login']/form/div[@class='form-fields']/div[@class='field']/input[@name='password']"));
+                IWebElement regist = driver.FindElement(By.XPath(@"//div[@class='login']/form/div[@class='form-fields']/input[@type='submit']"));
+                email.SendKeys(entry.email);
+                pwd.SendKeys(entry.password);
+                regist.Click();
+                IWebElement into = driver.FindElement(By.ClassName("profile-data"));               
+            }
+            catch
+            {
+                return false;
+            }
+            return true;
         }
 
+        //register one account
         public static void Register(IWebDriver driver, Logins.LoginEntry entry)
             {
                 onLog("Starting register " + entry.email, true);
@@ -470,9 +491,10 @@ namespace jdautomate
                 pwd2.SendKeys(entry.password);
                 regist.Click();
                 IWebElement into = driver.FindElement(By.Id("modal-register-complete"));
-                onLog("OK" + entry.email, true);
+                onLog("OK " + entry.email, true);
             }
 
+        //confirm with all links from textfile
         public static void ConfirmAll(string inputFile)
             {
                 List<string> lines = new List<string>(System.IO.File.ReadAllLines(inputFile));
@@ -501,6 +523,7 @@ namespace jdautomate
                 }
             }
 
+        //experimental
         public static void newGmailAccount(string login, string pass)
         {
             IWebDriver driver = new ChromeDriver(@"C:\1");
@@ -523,6 +546,7 @@ namespace jdautomate
             driver.FindElement(By.Id("iagreebutton")).Click();
         }
 
+        //confirm account with link
         private static string Confirm(IWebDriver driver, string url)
             {
 
@@ -540,45 +564,6 @@ namespace jdautomate
                 }
             }
 
-        public static bool Game(IWebDriver driver, Logins.LoginEntry entry)
-            {
-                driver.Manage().Cookies.DeleteAllCookies();
-                driver.Navigate().GoToUrl("http://signin.jd.ru/new/facade.html");
-                var wait = new WebDriverWait(driver, TimeSpan.FromSeconds(10));
-                wait.Until(ExpectedConditions.ElementIsVisible(By.Id("emailId")));
-                IWebElement email = driver.FindElement(By.Id("emailId"));
-                IWebElement pwd = driver.FindElement(By.Id("pwdId"));
-                IWebElement log = driver.FindElement(By.Id("login-btn"));
-                email.SendKeys(entry.email);
-                pwd.SendKeys(entry.password);
-                log.Click();
-                try
-                {
-                    wait.Until(ExpectedConditions.TitleContains("JD"));
-                }
-                catch (NoSuchElementException)
-                {
-                    return false;
-                }
-                driver.Navigate().GoToUrl("http://sale.jd.ru/act/cDUrj6Bakwy4oJI.html");
-                wait.Until(ExpectedConditions.ElementIsVisible(By.ClassName("btn-go-bg")));
-                IWebElement start = driver.FindElement(By.ClassName("btn-go-bg"));
-                start.Click();
-                driver.Manage().Timeouts().ImplicitlyWait(TimeSpan.FromSeconds(10));
-                IWebElement win = driver.FindElement(By.ClassName("dialog-content"));
-                switch (win.Text)
-                {
-                    case "Ничего, повезёт в следующий раз!":
-                        return false;
-
-                    case "Все попытки израсходованы":
-                        return false;
-
-                    default:
-                        return false;
-
-                }
-            }
         }   
 
         public class windows
@@ -599,21 +584,29 @@ namespace jdautomate
     [Serializable]
     public class Logins
     {
+        //instance to work
         public static Logins instance;
         public List<LoginEntry> loginsList;
+
+        //empty init
         public Logins()
         {
             this.loginsList = new List<LoginEntry>();
         }
+
+        //init from XML
         public Logins(string path)
         {
             this.loginsList = Logins.LoadFromFile(path);
         }
+
+        //one account
         public class LoginEntry
         {
             public string email, password, isRegistered;
         }
 
+        //make pairs email-pass from different emails list
         public static Logins GetLogins(List<String> inputEmails, bool randomPass, string pass = "defaultPass1")
         {
             Random rand = new Random();
@@ -622,7 +615,7 @@ namespace jdautomate
             {
                 var entry = new Logins.LoginEntry();
                 entry.email = email;
-                entry.password = (randomPass) ? GetPass(rand) : pass;
+                entry.password = (randomPass) ? GetPass(rand) : pass; //random pass or same to each entry
                 entry.isRegistered = "false";
                 list.loginsList.Add(entry);
             }
@@ -630,6 +623,7 @@ namespace jdautomate
             return list;
         }
 
+        //make pairs login-pass from one gmail account
         public static Logins GetLogins(String inputEmail, int num, bool randomPass, string pass = "defaultPass1")
         {
             Logins list = new Logins();
@@ -657,11 +651,15 @@ namespace jdautomate
             }
             return GetLogins(entry, randomPass, pass);
             }
+
+        //save accounts list to XML
         public static void SaveToFile(List<LoginEntry> logins, string path)
         {
             XmlSerializer formatter = new XmlSerializer(typeof(List<LoginEntry>));
             using (FileStream fs = new FileStream(path, FileMode.Create)) formatter.Serialize(fs, logins);
         }
+
+        //get accounts list from XML
         public static List<LoginEntry> LoadFromFile(string path)
         {
             XmlSerializer formatter = new XmlSerializer(typeof(List<LoginEntry>));
@@ -671,6 +669,8 @@ namespace jdautomate
                 return logins;
             }
         }
+
+        //make random pass with variable length
         public static string GetPass(Random r, int x = 8)
         {
             string pass = "";

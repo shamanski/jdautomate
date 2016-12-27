@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.accounts = new System.Windows.Forms.TabPage();
             this.listView1 = new System.Windows.Forms.ListView();
@@ -52,7 +53,6 @@
             this.label1 = new System.Windows.Forms.Label();
             this.emailText = new System.Windows.Forms.TextBox();
             this.registration = new System.Windows.Forms.TabPage();
-            this.button2 = new System.Windows.Forms.Button();
             this.listViewRegister = new System.Windows.Forms.ListView();
             this.columnHeader1 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
             this.columnHeader2 = ((System.Windows.Forms.ColumnHeader)(new System.Windows.Forms.ColumnHeader()));
@@ -63,6 +63,8 @@
             this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
             this.openButton = new System.Windows.Forms.Button();
             this.login = new System.Windows.Forms.TabPage();
+            this.label15 = new System.Windows.Forms.Label();
+            this.numericUpgrades = new System.Windows.Forms.NumericUpDown();
             this.label14 = new System.Windows.Forms.Label();
             this.numericLaps = new System.Windows.Forms.NumericUpDown();
             this.label12 = new System.Windows.Forms.Label();
@@ -91,19 +93,19 @@
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
             this.statusText = new System.Windows.Forms.ToolStripStatusLabel();
             this.toolStripProgressBar1 = new System.Windows.Forms.ToolStripProgressBar();
-            this.numericUpgrades = new System.Windows.Forms.NumericUpDown();
-            this.label15 = new System.Windows.Forms.Label();
+            this.toolStripDropDownButton1 = new System.Windows.Forms.ToolStripDropDownButton();
+            this.cancelButton = new System.Windows.Forms.ToolStripMenuItem();
             this.tabControl1.SuspendLayout();
             this.accounts.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.countText)).BeginInit();
             this.registration.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.login.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpgrades)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericLaps)).BeginInit();
             this.Readconfirms.SuspendLayout();
             this.ConfirmRegistration.SuspendLayout();
             this.statusStrip1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpgrades)).BeginInit();
             this.SuspendLayout();
             // 
             // tabControl1
@@ -342,7 +344,6 @@
             // 
             // registration
             // 
-            this.registration.Controls.Add(this.button2);
             this.registration.Controls.Add(this.listViewRegister);
             this.registration.Controls.Add(this.registerButton);
             this.registration.Controls.Add(this.label5);
@@ -355,16 +356,6 @@
             this.registration.TabIndex = 1;
             this.registration.Text = "Registration";
             this.registration.UseVisualStyleBackColor = true;
-            // 
-            // button2
-            // 
-            this.button2.Location = new System.Drawing.Point(76, 184);
-            this.button2.Name = "button2";
-            this.button2.Size = new System.Drawing.Size(75, 23);
-            this.button2.TabIndex = 11;
-            this.button2.Text = "button2";
-            this.button2.UseVisualStyleBackColor = true;
-            this.button2.Click += new System.EventHandler(this.button2_Click);
             // 
             // listViewRegister
             // 
@@ -456,6 +447,37 @@
             this.login.TabIndex = 2;
             this.login.Text = "MultiLogin";
             this.login.UseVisualStyleBackColor = true;
+            // 
+            // label15
+            // 
+            this.label15.AutoSize = true;
+            this.label15.Location = new System.Drawing.Point(179, 79);
+            this.label15.Name = "label15";
+            this.label15.Size = new System.Drawing.Size(74, 13);
+            this.label15.TabIndex = 26;
+            this.label15.Text = "Max upgrades";
+            // 
+            // numericUpgrades
+            // 
+            this.numericUpgrades.Location = new System.Drawing.Point(259, 77);
+            this.numericUpgrades.Maximum = new decimal(new int[] {
+            999,
+            0,
+            0,
+            0});
+            this.numericUpgrades.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.numericUpgrades.Name = "numericUpgrades";
+            this.numericUpgrades.Size = new System.Drawing.Size(66, 20);
+            this.numericUpgrades.TabIndex = 25;
+            this.numericUpgrades.Value = new decimal(new int[] {
+            100,
+            0,
+            0,
+            0});
             // 
             // label14
             // 
@@ -695,7 +717,8 @@
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripStatusLabel1,
             this.statusText,
-            this.toolStripProgressBar1});
+            this.toolStripProgressBar1,
+            this.toolStripDropDownButton1});
             this.statusStrip1.Location = new System.Drawing.Point(0, 413);
             this.statusStrip1.Name = "statusStrip1";
             this.statusStrip1.Size = new System.Drawing.Size(863, 22);
@@ -719,41 +742,28 @@
             // 
             this.toolStripProgressBar1.Alignment = System.Windows.Forms.ToolStripItemAlignment.Right;
             this.toolStripProgressBar1.Name = "toolStripProgressBar1";
-            this.toolStripProgressBar1.RightToLeft = System.Windows.Forms.RightToLeft.Yes;
-            this.toolStripProgressBar1.RightToLeftLayout = true;
+            this.toolStripProgressBar1.RightToLeft = System.Windows.Forms.RightToLeft.No;
             this.toolStripProgressBar1.Size = new System.Drawing.Size(250, 16);
             this.toolStripProgressBar1.Step = 1;
             // 
-            // numericUpgrades
+            // toolStripDropDownButton1
             // 
-            this.numericUpgrades.Location = new System.Drawing.Point(259, 77);
-            this.numericUpgrades.Maximum = new decimal(new int[] {
-            999,
-            0,
-            0,
-            0});
-            this.numericUpgrades.Minimum = new decimal(new int[] {
-            1,
-            0,
-            0,
-            0});
-            this.numericUpgrades.Name = "numericUpgrades";
-            this.numericUpgrades.Size = new System.Drawing.Size(66, 20);
-            this.numericUpgrades.TabIndex = 25;
-            this.numericUpgrades.Value = new decimal(new int[] {
-            100,
-            0,
-            0,
-            0});
+            this.toolStripDropDownButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripDropDownButton1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.cancelButton});
+            this.toolStripDropDownButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripDropDownButton1.Image")));
+            this.toolStripDropDownButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripDropDownButton1.Name = "toolStripDropDownButton1";
+            this.toolStripDropDownButton1.Size = new System.Drawing.Size(44, 20);
+            this.toolStripDropDownButton1.Text = "Stop";
+            this.toolStripDropDownButton1.TextImageRelation = System.Windows.Forms.TextImageRelation.TextBeforeImage;
             // 
-            // label15
+            // cancelButton
             // 
-            this.label15.AutoSize = true;
-            this.label15.Location = new System.Drawing.Point(179, 79);
-            this.label15.Name = "label15";
-            this.label15.Size = new System.Drawing.Size(74, 13);
-            this.label15.TabIndex = 26;
-            this.label15.Text = "Max upgrades";
+            this.cancelButton.Name = "cancelButton";
+            this.cancelButton.Size = new System.Drawing.Size(152, 22);
+            this.cancelButton.Text = "Stop all";
+            this.cancelButton.Click += new System.EventHandler(this.cancelButton_Click);
             // 
             // Form1
             // 
@@ -774,6 +784,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
             this.login.ResumeLayout(false);
             this.login.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.numericUpgrades)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericLaps)).EndInit();
             this.Readconfirms.ResumeLayout(false);
             this.Readconfirms.PerformLayout();
@@ -781,7 +792,6 @@
             this.ConfirmRegistration.PerformLayout();
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.numericUpgrades)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -818,7 +828,6 @@
         private System.Windows.Forms.Button registerButton;
         private System.Windows.Forms.Label label5;
         private System.Windows.Forms.NumericUpDown numericUpDown1;
-        private System.Windows.Forms.Button button2;
         private System.Windows.Forms.TabPage Readconfirms;
         private System.Windows.Forms.TextBox urlToFindTextBox;
         private System.Windows.Forms.Label label9;
@@ -854,6 +863,8 @@
         private System.Windows.Forms.ToolStripProgressBar toolStripProgressBar1;
         private System.Windows.Forms.Label label15;
         private System.Windows.Forms.NumericUpDown numericUpgrades;
+        private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButton1;
+        private System.Windows.Forms.ToolStripMenuItem cancelButton;
         //private System.Windows.Forms.Button button3;
     }
 }
