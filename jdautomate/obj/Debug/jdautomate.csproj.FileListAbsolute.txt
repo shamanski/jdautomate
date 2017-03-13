@@ -21,7 +21,6 @@ C:\Projects\jdautomate\jdautomate\bin\Debug\WebDriver.Support.dll
 C:\Projects\jdautomate\jdautomate\bin\Debug\WebDriver.xml
 C:\Projects\jdautomate\jdautomate\bin\Debug\WebDriver.Support.xml
 C:\Projects\jdautomate\jdautomate\obj\Debug\jdautomate.csprojResolveAssemblyReference.cache
-C:\Projects\jdautomate\jdautomate\obj\Debug\jdautomate.Form1.resources
 C:\Projects\jdautomate\jdautomate\obj\Debug\jdautomate.Properties.Resources.resources
 C:\Projects\jdautomate\jdautomate\obj\Debug\jdautomate.csproj.GenerateResource.Cache
 C:\Projects\jdautomate\jdautomate\bin\Debug\Newtonsoft.Json.dll
@@ -30,3 +29,4 @@ C:\Projects\jdautomate\jdautomate\bin\Debug\Telegram.Bot.dll
 C:\Projects\jdautomate\jdautomate\bin\Debug\Newtonsoft.Json.xml
 C:\Projects\jdautomate\jdautomate\bin\Debug\System.Net.Http.Formatting.xml
 C:\Projects\jdautomate\jdautomate\bin\Debug\Telegram.Bot.xml
+C:\Projects\jdautomate\jdautomate\obj\Debug\jdautomate.MainForm.resources
