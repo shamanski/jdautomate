@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data;
 using System.Drawing;
+using System.Diagnostics;
 using System.Threading;
 using System.Linq;
 using System.Text;
@@ -20,11 +21,20 @@ using System.Xml.Serialization;
 using System.Net.Mail;
 using OSPOP3_Plus;
 
+using Telegram.Bot.Args;
+using Telegram.Bot.Types;
+using Telegram.Bot.Types.Enums;
+using Telegram.Bot.Types.InlineQueryResults;
+using Telegram.Bot.Types.InputMessageContents;
+using Telegram.Bot.Types.ReplyMarkups;
+
 namespace jdautomate
 {
     public partial class Form1 : Form
     {
         BackgroundWorker work;
+        long chatID;
+        private static readonly Telegram.Bot.TelegramBotClient Bot = new Telegram.Bot.TelegramBotClient("366916344:AAE6Sh5-AVk9Qb1f1MvTjq31zbnkpB6TaPc");
         public Form1()
         {
             InitializeComponent();
@@ -35,6 +45,92 @@ namespace jdautomate
             work.RunWorkerCompleted += delegate { workProgress(null, null); };
             Automate.onLog += this.LogConsole;
             Automate.onStatus += this.ChangeStatus;
+
+            Bot.OnCallbackQuery += BotOnCallbackQueryReceived;
+            Bot.OnMessage += BotOnMessageReceived;
+            Bot.OnMessageEdited += BotOnMessageReceived;
+            Bot.OnInlineQuery += BotOnInlineQueryReceived;
+            Bot.OnInlineResultChosen += BotOnChosenInlineResultReceived;
+            Bot.OnReceiveError += BotOnReceiveError;
+            Bot.StartReceiving();
+        }
+
+        async void send(string s)
+        {
+            await Bot.SendTextMessageAsync(chatID, s);
+        }
+        private void botLog(string s, bool newLine)
+        {
+            send(s);
+        }
+        private static void BotOnReceiveError(object sender, ReceiveErrorEventArgs receiveErrorEventArgs)
+        {
+            Debugger.Break();
+        }
+
+        private static void BotOnChosenInlineResultReceived(object sender, ChosenInlineResultEventArgs chosenInlineResultEventArgs)
+        {
+            Console.WriteLine($"Received choosen inline result: {chosenInlineResultEventArgs.ChosenInlineResult.ResultId}");
+        }
+
+        private static async void BotOnInlineQueryReceived(object sender, InlineQueryEventArgs inlineQueryEventArgs)
+        {
+            InlineQueryResult[] results = {
+                new InlineQueryResultLocation
+                {
+                    Id = "1",
+                    Latitude = 40.7058316f, // displayed result
+                    Longitude = -74.2581888f,
+                    Title = "New York",
+                    InputMessageContent = new InputLocationMessageContent // message if result is selected
+                    {
+                        Latitude = 40.7058316f,
+                        Longitude = -74.2581888f,
+                    }
+                },
+
+                new InlineQueryResultLocation
+                {
+                    Id = "2",
+                    Longitude = 52.507629f, // displayed result
+                    Latitude = 13.1449577f,
+                    Title = "Berlin",
+                    InputMessageContent = new InputLocationMessageContent // message if result is selected
+                    {
+                        Longitude = 52.507629f,
+                        Latitude = 13.1449577f
+                    }
+                }
+            };
+
+            await Bot.AnswerInlineQueryAsync(inlineQueryEventArgs.InlineQuery.Id, results, isPersonal: true, cacheTime: 0);
+        }
+
+        private async void BotOnMessageReceived(object sender, MessageEventArgs messageEventArgs)
+        {
+            var message = messageEventArgs.Message;
+
+            if (message == null || message.Type != MessageType.TextMessage) return;
+
+            if (message.Text.StartsWith("/start")) // send inline keyboard
+            {
+                await Bot.SendTextMessageAsync(message.Chat.Id, "Go!");
+               // upgradeInputFile.Text = @"C:\Projects\jdautomate\jdautomate\bin\Debug\rudenkov.xml";
+                upgradeOutputFile.Text = "bot.txt";
+                chatID = message.Chat.Id;
+                Automate.onLog += this.botLog;
+                IWebDriver driver = new ChromeDriver(@"C:\1");
+                var login = Logins.LoadFromFile(upgradeInputFile.Text);
+                work.DoWork += delegate { Automate.UpgradeAll(driver, login, (int)numericUpgrades.Value, (int)numericLaps.Value, (int)limitWaitUpFown.Value); };
+                work.RunWorkerAsync();
+                work.ReportProgress(1);
+            }
+        }
+
+        private static async void BotOnCallbackQueryReceived(object sender, CallbackQueryEventArgs callbackQueryEventArgs)
+        {
+            await Bot.AnswerCallbackQueryAsync(callbackQueryEventArgs.CallbackQuery.Id,
+                $"Received {callbackQueryEventArgs.CallbackQuery.Data}");
         }
 
         void ChangeStatus(object sender, Automate.AutomateEventArgs e)
@@ -59,7 +155,7 @@ namespace jdautomate
             consoleBox.Items.Add(s);
             consoleBox.SelectedIndex = consoleBox.Items.Count - 1;
             string timeStamp = DateTime.Now.ToString("dd.MM HH:mm:ss ");
-            File.AppendAllText("log.txt", timeStamp + s + Environment.NewLine);
+            System.IO.File.AppendAllText("log.txt", timeStamp + s + Environment.NewLine);
         }
 
         private void randomCheck_CheckedChanged(object sender, EventArgs e)
@@ -76,7 +172,7 @@ namespace jdautomate
             Logins logins;
             if (fromTXT.Checked)
             {
-                string[] lines = File.ReadAllLines(inputTXTBox.Text);
+                string[] lines = System.IO.File.ReadAllLines(inputTXTBox.Text);
                 logins = Logins.GetLogins(new List<string>(lines), rand, pass);
             }
             else
@@ -154,7 +250,7 @@ namespace jdautomate
         {
             IWebDriver driver = new ChromeDriver(@"C:\1");
             var login = Logins.LoadFromFile(upgradeInputFile.Text);   
-            work.DoWork += delegate { Automate.UpgradeAll(driver, login, (int)numericUpgrades.Value,(int)numericLaps.Value); };
+            work.DoWork += delegate { Automate.UpgradeAll(driver, login, (int)numericUpgrades.Value,(int)numericLaps.Value, (int)limitWaitUpFown.Value); };
             work.RunWorkerAsync();
             work.ReportProgress(1);
         }
@@ -212,7 +308,7 @@ namespace jdautomate
         {
             string timeStamp = DateTime.Now.ToString("dd.MM HH:mm:ss ");
             string text = "Operation cancelled." + Environment.NewLine + timeStamp + statusText.Text + Environment.NewLine;
-            File.AppendAllText("log.txt", text);
+            System.IO.File.AppendAllText("log.txt", text);
             work.CancelAsync();
         }
     }
@@ -251,7 +347,6 @@ namespace jdautomate
                 System.IO.FileStream fs = new System.IO.FileStream(saveLocation, System.IO.FileMode.Open);
                 Image myScreenhot = Image.FromStream(fs);
                 fs.Close();
-
                 return myScreenhot;
             }
 
@@ -261,18 +356,12 @@ namespace jdautomate
                 Random r = new Random();
                 string saveLocation = Logins.GetPass(r, 15);
                 Image myScreenhot = TakeScreenshot(parDriver);
-
-                // Устанавливаем координаты капчи и ее размер
                 Rectangle parSection = new Rectangle(parXPosCaptcha, parYPosCaptcha, size.Width, size.Height);
-
-                // Создаем изображение с заданым размером
                 Bitmap bmpCaptcha = new Bitmap(parSection.Width, parSection.Height);
-                // Вырезаем область изображения
                 Graphics g = Graphics.FromImage(bmpCaptcha);
                 g.DrawImage(myScreenhot, 0, 0, parSection, GraphicsUnit.Pixel);
                 g.Dispose();
                 bmpCaptcha.Save(Logins.GetPass(r, 15));
-                //return bmpCaptcha;
             }
 
         //register list of accounts
@@ -328,11 +417,11 @@ namespace jdautomate
             {
                 onLog("Start connecting " + email, true);
                 oSession = new OSPOP3_Plus.Session();
-            oSession.ErrorPOP3 += new Session.ErrorPOP3Handler(oSession_ErrorPOP3);
-            oSession.StatusChanged += new Session.StatusChangedHandler(oSession_StatusChanged);
-            oSession.Closed += new Session.ClosedHandler(oSession_Connected);
-            oSession.Connected += new Session.ConnectedHandler(oSession_Connected);
-            oSession.UseSSL = true;
+                oSession.ErrorPOP3 += new Session.ErrorPOP3Handler(oSession_ErrorPOP3);
+                oSession.StatusChanged += new Session.StatusChangedHandler(oSession_StatusChanged);
+                oSession.Closed += new Session.ClosedHandler(oSession_Connected);
+                oSession.Connected += new Session.ConnectedHandler(oSession_Connected);
+                oSession.UseSSL = true;
                 oSession.OpenPOP3("pop.gmail.com", 995, email, password, false);
                 onLog("Status: " + oSession.Status, true);
                 int count = oSession.GetMessageCount();
@@ -352,25 +441,23 @@ namespace jdautomate
                 }
                 oSession.ClosePOP3();
                 onLog("Found links: " + s.Count.ToString(), true);
-            using (System.IO.StreamWriter file =
-            new System.IO.StreamWriter(fileName, true))
-            {
-                foreach (string line in s)
-                {
-                    file.WriteLine(@"https://" + line);
-                }
-
-            }
-            onLog("Save to file " + fileName, true);
+            System.IO.File.AppendAllLines(fileName, s);
+            onLog("Saved to file " + fileName, true);
 
         }
 
         //upgrade one time
-        public static string Upgrade(IWebDriver driver)
+        async static Task<string> Upgrade(IWebDriver driver, int limitWait)
         {
             try
             {
-                driver.Navigate().GoToUrl("https://www.slivki.by/kamni-ohlazhdenie-napitok-minsk-skidka");
+                driver.Navigate().GoToUrl(System.IO.File.ReadAllText("promourl.txt"));
+               while (driver.FindElement(By.Id("usedCodeCount")).Text == driver.FindElement(By.Id("freeCodeCount")).Text)
+                {
+                    onLog("Limit reached...wait "+limitWait+" minute(s)", true);
+                    await Task.Delay(60000*limitWait);
+                    driver.Navigate().Refresh();
+                }
                 IWebElement button = driver.FindElement(By.Id("buyCodeButton"));
                 button.Click();
                 IWebElement button2 = driver.FindElement(By.ClassName("buttonYes"));
@@ -386,7 +473,7 @@ namespace jdautomate
         }
 
         //login and upgrade all entries in limit
-        public static void UpgradeAll(IWebDriver driver, List<Logins.LoginEntry> loginEntry, int maxUpgrades, int maxLaps)
+        public static void UpgradeAll(IWebDriver driver, List<Logins.LoginEntry> loginEntry, int maxUpgrades, int maxLaps, int limitWait)
         {
             var nextLapEntries = new List<Logins.LoginEntry>(); //list for negative entries
             int currentLap = 1;
@@ -416,7 +503,7 @@ namespace jdautomate
                         onLog(logMsg, true);
                         for (attempt = 1; attempt <= numAttempts; attempt++)
                         {
-                            string res = Automate.Upgrade(driver);//upgrade current entry attempt                            
+                            string res = Automate.Upgrade(driver, limitWait).Result;//upgrade current entry attempt                            
                             if (res=="")
                             {
                                 logMsg = "nothing";
@@ -440,8 +527,16 @@ namespace jdautomate
                 currentLap++;//go to next lap
             }
             while (nextLapEntries.Count>0 && currentLap<maxLaps && nextLapEntries.Count< maxUpgrades);
-            
+            e.Message = "Done.";
+            e.Percent = 0;
+            onStatus(null, e);
+            driver.Dispose();
         }
+
+        //public static string[] H24check()
+        //{
+
+        //}
 
         //login one entry
         public static bool Login(IWebDriver driver, Logins.LoginEntry entry)
@@ -452,15 +547,14 @@ namespace jdautomate
                 driver.Manage().Cookies.DeleteAllCookies();
                 driver.Manage().Timeouts().ImplicitlyWait(TimeSpan.FromSeconds(5));
                 driver.Navigate().GoToUrl("http://slivki.by");
-                IWebElement enter = driver.FindElement(By.ClassName("enter"));
-                enter.Click();
+                driver.FindElement(By.ClassName("enter")).Click();
                 IWebElement email = driver.FindElement(By.XPath(@"//div[@class='login']/form/div[@class='form-fields']/div[@class='field']/input[@name='email']"));
                 IWebElement pwd = driver.FindElement(By.XPath(@"//div[@class='login']/form/div[@class='form-fields']/div[@class='field']/input[@name='password']"));
                 IWebElement regist = driver.FindElement(By.XPath(@"//div[@class='login']/form/div[@class='form-fields']/input[@type='submit']"));
                 email.SendKeys(entry.email);
                 pwd.SendKeys(entry.password);
                 regist.Click();
-                IWebElement into = driver.FindElement(By.ClassName("profile-data"));               
+                IWebElement into = driver.FindElement(By.ClassName("profile-data"));
             }
             catch
             {
@@ -509,12 +603,12 @@ namespace jdautomate
                 string mail = Confirm(driver, lines[i]);
                     if (mail != "")
                     {
-                        File.AppendAllText("confirmed.txt", mail + Environment.NewLine);
+                        System.IO.File.AppendAllText("confirmed.txt", mail + Environment.NewLine);
                         good++;
                     }
                     else
                     {
-                        File.AppendAllText("nonconfirmed.txt", lines[i]+ Environment.NewLine);
+                        System.IO.File.AppendAllText("nonconfirmed.txt", lines[i]+ Environment.NewLine);
                         bad++;
                     }
                     onLog("Confirmed: " + good.ToString() + " Uncofirmed: " + bad.ToString(), false);
@@ -566,20 +660,6 @@ namespace jdautomate
 
         }   
 
-        public class windows
-        {
-        public List<Thread> threads;
-        public List<IWebDriver> drivers;
-        public void Add(IWebDriver driver)
-        {
-            this.drivers.Add(driver); 
-        }
-        public windows()
-        {
-            this.drivers = new List<IWebDriver>();
-        }
-
-    }
 
     [Serializable]
     public class Logins
@@ -616,7 +696,7 @@ namespace jdautomate
                 var entry = new Logins.LoginEntry();
                 entry.email = email;
                 entry.password = (randomPass) ? GetPass(rand) : pass; //random pass or same to each entry
-                entry.isRegistered = "false";
+                entry.isRegistered = "false";//not registered yet
                 list.loginsList.Add(entry);
             }
 
@@ -627,14 +707,14 @@ namespace jdautomate
         public static Logins GetLogins(String inputEmail, int num, bool randomPass, string pass = "defaultPass1")
         {
             Logins list = new Logins();
-            var baseEmail = inputEmail.Remove(inputEmail.LastIndexOf('@'));
-            var mask = new BitArray(new bool[baseEmail.Length - 1]);
+            var baseEmail = inputEmail.Remove(inputEmail.LastIndexOf('@'));//remove domain
+            var mask = new BitArray(new bool[baseEmail.Length - 1]);//bitmask
             var entry = new List<string>();
             int curr = 1;
             while (entry.Count < num)
             {
                 string resString = baseEmail;
-                var b = new BitArray(new int[] { curr });
+                var b = new BitArray(new int[] { curr });//bitmask from int
                 for (int nu = 0; nu < mask.Count; nu++)
                 {
                     mask[nu] = b[nu];
@@ -643,10 +723,10 @@ namespace jdautomate
 
                 for (int i = mask.Length; i >= 1; i--)
                 {
-                    if (mask.Get(i - 1)) resString = resString.Insert(i, ".");
+                    if (mask.Get(i - 1)) resString = resString.Insert(i, ".");//insert '.' with bitmask
                 }
                 
-                entry.Add (resString + inputEmail.Substring(inputEmail.LastIndexOf('@')));
+                entry.Add (resString + inputEmail.Substring(inputEmail.LastIndexOf('@')));//return domain
                 curr++;
             }
             return GetLogins(entry, randomPass, pass);
@@ -676,16 +756,16 @@ namespace jdautomate
             string pass = "";
             while (pass.Length < x)
             {
-                Char c = (char)r.Next(33, 125);
+                Char c = (char)r.Next(33, 125);//letters and digits only
                 if (Char.IsLetterOrDigit(c))
                     pass += c;
             }
             foreach (char c in pass)
             {
-                if (Char.IsDigit(c)) return pass;
+                if (Char.IsDigit(c)) return pass;//at least one digit
             }
-            var cc = (char)r.Next(48, 57);
-            pass = pass.Remove(r.Next(0, pass.Length - 1), 1).Insert(r.Next(0, pass.Length - 1), cc.ToString());
+            var cc = (char)r.Next(48, 57);//digit
+            pass = pass.Remove(r.Next(0, pass.Length - 1), 1).Insert(r.Next(0, pass.Length - 1), cc.ToString());//if no digits - replace one symbol
             return pass;
         }
 

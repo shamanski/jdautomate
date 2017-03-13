@@ -63,6 +63,8 @@
             this.numericUpDown1 = new System.Windows.Forms.NumericUpDown();
             this.openButton = new System.Windows.Forms.Button();
             this.login = new System.Windows.Forms.TabPage();
+            this.limitWaitUpFown = new System.Windows.Forms.NumericUpDown();
+            this.label16 = new System.Windows.Forms.Label();
             this.label15 = new System.Windows.Forms.Label();
             this.numericUpgrades = new System.Windows.Forms.NumericUpDown();
             this.label14 = new System.Windows.Forms.Label();
@@ -101,6 +103,7 @@
             this.registration.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).BeginInit();
             this.login.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.limitWaitUpFown)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpgrades)).BeginInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericLaps)).BeginInit();
             this.Readconfirms.SuspendLayout();
@@ -430,6 +433,8 @@
             // 
             // login
             // 
+            this.login.Controls.Add(this.limitWaitUpFown);
+            this.login.Controls.Add(this.label16);
             this.login.Controls.Add(this.label15);
             this.login.Controls.Add(this.numericUpgrades);
             this.login.Controls.Add(this.label14);
@@ -447,6 +452,37 @@
             this.login.TabIndex = 2;
             this.login.Text = "MultiLogin";
             this.login.UseVisualStyleBackColor = true;
+            // 
+            // limitWaitUpFown
+            // 
+            this.limitWaitUpFown.Location = new System.Drawing.Point(170, 109);
+            this.limitWaitUpFown.Maximum = new decimal(new int[] {
+            999,
+            0,
+            0,
+            0});
+            this.limitWaitUpFown.Minimum = new decimal(new int[] {
+            1,
+            0,
+            0,
+            0});
+            this.limitWaitUpFown.Name = "limitWaitUpFown";
+            this.limitWaitUpFown.Size = new System.Drawing.Size(63, 20);
+            this.limitWaitUpFown.TabIndex = 28;
+            this.limitWaitUpFown.Value = new decimal(new int[] {
+            5,
+            0,
+            0,
+            0});
+            // 
+            // label16
+            // 
+            this.label16.AutoSize = true;
+            this.label16.Location = new System.Drawing.Point(20, 111);
+            this.label16.Name = "label16";
+            this.label16.Size = new System.Drawing.Size(144, 13);
+            this.label16.TabIndex = 27;
+            this.label16.Text = "Wait for limit refresh (minutes)";
             // 
             // label15
             // 
@@ -525,6 +561,7 @@
             this.upgradeInputFile.Name = "upgradeInputFile";
             this.upgradeInputFile.Size = new System.Drawing.Size(265, 20);
             this.upgradeInputFile.TabIndex = 21;
+            this.upgradeInputFile.Text = "default.xml";
             // 
             // upgradeInputButton
             // 
@@ -551,6 +588,7 @@
             this.upgradeOutputFile.Name = "upgradeOutputFile";
             this.upgradeOutputFile.Size = new System.Drawing.Size(265, 20);
             this.upgradeOutputFile.TabIndex = 18;
+            this.upgradeOutputFile.Text = "out.txt";
             // 
             // upgradeOutputButton
             // 
@@ -564,7 +602,7 @@
             // 
             // upgradeButton
             // 
-            this.upgradeButton.Location = new System.Drawing.Point(94, 110);
+            this.upgradeButton.Location = new System.Drawing.Point(121, 141);
             this.upgradeButton.Name = "upgradeButton";
             this.upgradeButton.Size = new System.Drawing.Size(153, 61);
             this.upgradeButton.TabIndex = 0;
@@ -761,7 +799,7 @@
             // cancelButton
             // 
             this.cancelButton.Name = "cancelButton";
-            this.cancelButton.Size = new System.Drawing.Size(152, 22);
+            this.cancelButton.Size = new System.Drawing.Size(113, 22);
             this.cancelButton.Text = "Stop all";
             this.cancelButton.Click += new System.EventHandler(this.cancelButton_Click);
             // 
@@ -784,6 +822,7 @@
             ((System.ComponentModel.ISupportInitialize)(this.numericUpDown1)).EndInit();
             this.login.ResumeLayout(false);
             this.login.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.limitWaitUpFown)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericUpgrades)).EndInit();
             ((System.ComponentModel.ISupportInitialize)(this.numericLaps)).EndInit();
             this.Readconfirms.ResumeLayout(false);
@@ -865,6 +904,8 @@
         private System.Windows.Forms.NumericUpDown numericUpgrades;
         private System.Windows.Forms.ToolStripDropDownButton toolStripDropDownButton1;
         private System.Windows.Forms.ToolStripMenuItem cancelButton;
+        private System.Windows.Forms.NumericUpDown limitWaitUpFown;
+        private System.Windows.Forms.Label label16;
         //private System.Windows.Forms.Button button3;
     }
 }
